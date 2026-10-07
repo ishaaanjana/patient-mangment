@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Registration - SQL Database</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen p-4 md:p-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Header -->
+    <div class="bg-indigo-600 text-white p-6 rounded-2xl shadow-md flex flex-wrap justify-between items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold flex items-center gap-2">
+          <i class="fa-solid fa-hospital-user"></i> Hospital Patient Management
+        </h1>
+        <p class="text-sm text-indigo-100 mt-1">Connected live with SQLite Database</p>
+      </div>
+      <span class="bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-full font-semibold">
+        <i class="fa-solid fa-database mr-1"></i> Database Live
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Patient Form -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-4">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b">Add New Patient</h2>
+        
+        <form id="patientForm" onsubmit="savePatient(event)" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Patient Code *</label>
+              <input type="text" id="patient_code" required placeholder="e.g. P101" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mobile No. *</label>
+              <input type="tel" id="phone" required placeholder="9876543210" pattern="[0-9]{10}" title="10 digit mobile number" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name *</label>
+            <input type="text" id="name" required placeholder="e.g. Rahul Sharma" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Blood Group *</label>
+              <select id="blood_group" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Disease / Complaint *</label>
+              <input type="text" id="disease" required placeholder="e.g. Fever, Asthma" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">City *</label>
+              <input type="text" id="city" required placeholder="Jaipur" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Age *</label>
+              <input type="number" id="age" required min="1" max="119" placeholder="28" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Gender *</label>
+              <select id="gender" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Height (m) *</label>
+              <input type="number" step="0.01" id="height" required placeholder="1.75" oninput="calcBMI()" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Weight (kg) *</label>
+              <input type="number" step="0.1" id="weight" required placeholder="70" oninput="calcBMI()" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-50 border rounded-lg text-xs flex justify-between items-center font-medium">
+            <span class="text-slate-600">Calculated BMI Preview:</span>
+            <span id="bmi-display" class="font-bold text-indigo-600 text-sm">--</span>
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition">
+            Save Record to Database
+          </button>
+        </form>
+      </div>
+
+      <!-- Patients List Table -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-8">
+        <div class="flex justify-between items-center mb-4 pb-2 border-b">
+          <h2 class="text-lg font-bold text-slate-800">All Registered Patients</h2>
+          <button onclick="loadPatients()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md font-medium">
+            <i class="fa-solid fa-arrows-rotate mr-1"></i> Refresh
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs md:text-sm text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase font-semibold text-xs">
+              <tr>
+                <th class="p-3">ID</th>
+                <th class="p-3">Patient Details</th>
+                <th class="p-3">Medical Info</th>
+                <th class="p-3">City / Age</th>
+                <th class="p-3">BMI / Verdict</th>
+                <th class="p-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="6" class="text-center p-6 text-slate-400">Loading records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin;
+
+    function calcBMI() {
+      const h = parseFloat(document.getElementById("height").value);
+      const w = parseFloat(document.getElementById("weight").value);
+      const display = document.getElementById("bmi-display");
+      if (h > 0 && w > 0) {
+        display.innerText = (w / (h * h)).toFixed(2);
+      } else {
+        display.innerText = "--";
+      }
+    }
+
+    async function loadPatients() {
+      try {
+        const res = await fetch(`${API}/patients`);
+        const data = await res.json();
+        const tbody = document.getElementById("table-body");
+
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">Database is empty. Please add a new patient!</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = data.map(p => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3 font-mono font-bold text-slate-900">${p.patient_code}</td>
+            <td class="p-3">
+              <div class="font-bold text-slate-800">${p.name}</div>
+              <div class="text-xs text-slate-500"><i class="fa-solid fa-phone text-[10px]"></i> ${p.phone}</div>
+            </td>
+            <td class="p-3">
+              <div class="font-semibold text-rose-600">${p.disease}</div>
+              <div class="text-xs text-slate-500 font-bold">Blood: <span class="text-slate-700">${p.blood_group}</span></div>
+            </td>
+            <td class="p-3">
+              <div>${p.city}</div>
+              <div class="text-xs text-slate-500">${p.age} yrs (${p.gender})</div>
+            </td>
+            <td class="p-3">
+              <div class="font-bold text-slate-700">${p.bmi}</div>
+              <span class="px-2 py-0.5 text-[11px] rounded-full font-semibold ${
+                p.verdict === 'normal' ? 'bg-emerald-100 text-emerald-700' :
+                p.verdict === 'underweight' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
+              }">${p.verdict}</span>
+            </td>
+            <td class="p-3 text-center">
+              <button onclick="removePatient('${p.patient_code}')" class="text-rose-600 hover:text-rose-800 text-sm p-1" title="Delete">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        document.getElementById("table-body").innerHTML = `<tr><td colspan="6" class="text-center text-rose-500 p-6">Failed to connect to the database.</td></tr>`;
+      }
+    }
+
+    async function savePatient(e) {
+      e.preventDefault();
+      const payload = {
+        patient_code: document.getElementById("patient_code").value.trim(),
+        name: document.getElementById("name").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        blood_group: document.getElementById("blood_group").value,
+        disease: document.getElementById("disease").value.trim(),
+        city: document.getElementById("city").value.trim(),
+        age: parseInt(document.getElementById("age").value),
+        gender: document.getElementById("gender").value,
+        height: parseFloat(document.getElementById("height").value),
+        weight: parseFloat(document.getElementById("weight").value),
+      };
+
+      try {
+        const res = await fetch(`${API}/patients`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "An error occurred while saving the record");
+        }
+
+        document.getElementById("patientForm").reset();
+        document.getElementById("bmi-display").innerText = "--";
+        loadPatients();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function removePatient(code) {
+      if (!confirm(`Are you sure you want to delete patient ${code}?`)) return;
+      try {
+        const res = await fetch(`${API}/patients/${code}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Delete failed");
+        loadPatients();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    window.onload = loadPatients;
+  </script>
+</body>
+</html>
